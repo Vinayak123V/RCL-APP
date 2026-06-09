@@ -17,7 +17,7 @@ app.use('/battery', batteryRouter);
 
 // Raise Ticket Endpoint
 app.post('/ticket', async (req, res) => {
-  const { issue, deviceInfo } = req.body;
+  const { issue, userInfo } = req.body;
   try {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -45,14 +45,14 @@ app.post('/ticket', async (req, res) => {
           </div>
           
           <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #31708f;">
-            <h3 style="margin-top: 0; color: #31708f; font-size: 18px;">Device Information</h3>
+            <h3 style="margin-top: 0; color: #31708f; font-size: 18px;">User Information</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-              ${deviceInfo ? Object.entries(deviceInfo).map(([key, value]) => `
+              ${userInfo ? Object.entries(userInfo).map(([key, value]) => `
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; width: 35%; color: #555; text-transform: capitalize;">${key.replace(/([A-Z])/g, ' $1').trim()}</td>
                   <td style="padding: 8px; border-bottom: 1px solid #ddd; word-break: break-all; color: #333;">${value}</td>
                 </tr>
-              `).join('') : '<tr><td>No device info provided.</td></tr>'}
+              `).join('') : '<tr><td>No user info provided.</td></tr>'}
             </table>
           </div>
           

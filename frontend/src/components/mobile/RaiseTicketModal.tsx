@@ -8,28 +8,39 @@ interface Props {
 }
 
 export const RaiseTicketModal: React.FC<Props> = ({ open, onClose, onToast }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [location, setLocation] = useState('');
   const [issue, setIssue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!open) return null;
 
   const handleSubmit = async () => {
-    if (!issue.trim()) {
-      onToast('Please enter an issue description', 'error');
+    if (!name.trim() || !email.trim() || !mobile.trim() || !location.trim() || !issue.trim()) {
+      onToast('Please fill in all fields', 'error');
       return;
     }
     
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:3001/ticket', {
+      const backendUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3001/ticket'
+        : 'https://rcl-app.onrender.com/ticket';
+        
+      const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           issue,
-          deviceInfo: {
-            userAgent: navigator.userAgent,
+          userInfo: {
+            name,
+            email,
+            mobileNumber: mobile,
+            location,
             timestamp: new Date().toISOString(),
           }
         }),
@@ -38,6 +49,10 @@ export const RaiseTicketModal: React.FC<Props> = ({ open, onClose, onToast }) =>
       const data = await response.json();
       if (data.success) {
         onToast('Ticket raised successfully!', 'success');
+        setName('');
+        setEmail('');
+        setMobile('');
+        setLocation('');
         setIssue('');
         onClose();
       } else {
@@ -54,15 +69,48 @@ export const RaiseTicketModal: React.FC<Props> = ({ open, onClose, onToast }) =>
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center px-4'>
       <div className='absolute inset-0 bg-[#020617]/80 backdrop-blur-sm' onClick={onClose} />
-      <div className='relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl animate-fade-in-up'>
+      <div className='relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl animate-fade-in-up max-h-[90vh] overflow-y-auto'>
         <h3 className='text-lg font-bold text-white mb-2'>Raise a Ticket</h3>
-        <p className='text-xs text-slate-400 mb-4'>Describe the issue you are facing. An email will be sent to the support team.</p>
+        <p className='text-xs text-slate-400 mb-4'>Provide your details and describe the issue.</p>
+        
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder='Name'
+          className='w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-3'
+          disabled={isSubmitting}
+        />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder='Email'
+          className='w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-3'
+          disabled={isSubmitting}
+        />
+        <input
+          type="tel"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          placeholder='Mobile Number'
+          className='w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-3'
+          disabled={isSubmitting}
+        />
+        <input
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder='Location'
+          className='w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-4'
+          disabled={isSubmitting}
+        />
         
         <textarea
           value={issue}
           onChange={(e) => setIssue(e.target.value)}
           placeholder='Describe your issue here...'
-          className='w-full h-32 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-4 resize-none'
+          className='w-full h-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 mb-4 resize-none'
           disabled={isSubmitting}
         />
         
