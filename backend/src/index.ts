@@ -3,7 +3,11 @@ import http from 'http';
 import cors from 'cors';
 import { Server as SocketIO } from 'socket.io';
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 import { initDb } from './db';
+
+// Force Node to prefer IPv4 to fix ENETUNREACH errors on Render for Gmail SMTP
+dns.setDefaultResultOrder('ipv4first');
 import batteryRouter, { setLatestData } from './routes/battery';
 import { BatteryData } from '../../shared/types';
 
