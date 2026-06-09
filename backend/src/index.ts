@@ -45,7 +45,7 @@ app.post('/ticket', async (req, res) => {
             ${userInfo ? Object.entries(userInfo).map(([key, value]) => {
               let displayValue = value;
               if (key === 'timestamp' && value) {
-                displayValue = new Date(value).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' });
+                displayValue = new Date(String(value)).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' });
               }
               return `
               <tr>
