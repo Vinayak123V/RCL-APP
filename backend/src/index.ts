@@ -94,11 +94,41 @@ app.post('/otp/send', async (req, res) => {
 
   try {
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-        <h2>ASTRA App Registration</h2>
-        <p>Hello ${name || 'User'},</p>
-        <p>Your OTP for registration is: <strong style="font-size: 24px; color: #0056b3;">${otp}</strong></p>
-        <p>This OTP will expire in 10 minutes. Please do not share it with anyone.</p>
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; padding: 40px 0; margin: 0;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+          <tr>
+            <td style="background-color: #0891b2; padding: 30px 40px; text-align: center;">
+              <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 600; letter-spacing: 1px;">ASTRA Intelligence</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="color: #1e293b; font-size: 20px; margin-top: 0; margin-bottom: 20px; font-weight: 600;">Secure Authentication</h2>
+              <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 24px;">
+                Dear ${name || 'User'},
+              </p>
+              <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-top: 0; margin-bottom: 30px;">
+                A request has been made to register a new account with ASTRA using this email address. To complete your registration and verify your identity, please use the following One-Time Password (OTP):
+              </p>
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; text-align: center; margin-bottom: 30px;">
+                <span style="display: inline-block; font-family: monospace; font-size: 32px; font-weight: bold; color: #0f172a; letter-spacing: 8px;">${otp}</span>
+              </div>
+              <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-top: 0; margin-bottom: 10px;">
+                <strong>Note:</strong> This code is valid for exactly <strong>10 minutes</strong>. For security reasons, please do not share this code with anyone, including ASTRA staff.
+              </p>
+              <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-top: 0; margin-bottom: 0;">
+                If you did not initiate this request, you may safely ignore this email.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.5;">
+                &copy; ${new Date().getFullYear()} ASTRA Smart Lithium Battery Intelligence.<br>All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
       </div>
     `;
 
