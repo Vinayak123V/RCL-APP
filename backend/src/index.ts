@@ -19,57 +19,54 @@ app.use(cors());
 app.use(express.json());
 app.use('/battery', batteryRouter);
 
+import { Resend } from 'resend';
+const resend = new Resend('re_Lkjv46oj_57v1Dtv73rL6vCegMpb3ohio');
+
 // Raise Ticket Endpoint
 app.post('/ticket', async (req, res) => {
   const { issue, userInfo } = req.body;
   try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      family: 4, // Force IPv4 to fix Render's ENETUNREACH IPv6 issue
-      auth: {
-        // IMPORTANT: This user MUST be the exact Gmail address that generated the App Password
-        user: 'vinayakhosur85@gmail.com',
-        pass: 'nowxkyjmvgcfptsp',
-      },
-    } as any);
-
-    const mailOptions = {
-      from: '"ASTRA System" <vinayakhosur85@gmail.com>',
-      to: 'hosurv45@gmail.com',
-      subject: 'New Issue Ticket Raised from ASTRA App',
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
-          <h2 style="color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px;">ASTRA App - New Issue Ticket</h2>
-          <p><strong>Date & Time:</strong> ${new Date().toLocaleString()}</p>
-          
-          <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #d9534f;">
-            <h3 style="margin-top: 0; color: #d9534f; font-size: 18px;">Issue Description</h3>
-            <p style="white-space: pre-wrap; font-size: 15px; line-height: 1.5;">${issue}</p>
-          </div>
-          
-          <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #31708f;">
-            <h3 style="margin-top: 0; color: #31708f; font-size: 18px;">User Information</h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-              ${userInfo ? Object.entries(userInfo).map(([key, value]) => `
-                <tr>
-                  <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; width: 35%; color: #555; text-transform: capitalize;">${key.replace(/([A-Z])/g, ' $1').trim()}</td>
-                  <td style="padding: 8px; border-bottom: 1px solid #ddd; word-break: break-all; color: #333;">${value}</td>
-                </tr>
-              `).join('') : '<tr><td>No user info provided.</td></tr>'}
-            </table>
-          </div>
-          
-          <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
-            This is an automated message generated from the ASTRA application.<br>Please do not reply directly to this email.
-          </p>
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px;">ASTRA App - New Issue Ticket</h2>
+        <p><strong>Date & Time:</strong> ${new Date().toLocaleString()}</p>
+        
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #d9534f;">
+          <h3 style="margin-top: 0; color: #d9534f; font-size: 18px;">Issue Description</h3>
+          <p style="white-space: pre-wrap; font-size: 15px; line-height: 1.5;">${issue}</p>
         </div>
-      `
-    };
+        
+        <div style="background-color: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #31708f;">
+          <h3 style="margin-top: 0; color: #31708f; font-size: 18px;">User Information</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            ${userInfo ? Object.entries(userInfo).map(([key, value]) => `
+              <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold; width: 35%; color: #555; text-transform: capitalize;">${key.replace(/([A-Z])/g, ' $1').trim()}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; word-break: break-all; color: #333;">${value}</td>
+              </tr>
+            `).join('') : '<tr><td>No user info provided.</td></tr>'}
+          </table>
+        </div>
+        
+        <p style="font-size: 12px; color: #777; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+          This is an automated message generated from the ASTRA application.<br>Please do not reply directly to this email.
+        </p>
+      </div>
+    `;
 
-    await transporter.sendMail(mailOptions);
-    res.json({ success: true, message: 'Ticket raised successfully' });
+    const { data, error } = await resend.emails.send({
+      from: 'ASTRA System <onboarding@resend.dev>',
+      to: ['hosurv45@gmail.com'],
+      subject: 'New Issue Ticket Raised from ASTRA App',
+      html: htmlContent,
+    });
+
+    if (error) {
+      console.error('Resend API Error:', error);
+      return res.status(500).json({ success: false, error: 'Failed to raise ticket' });
+    }
+
+    res.json({ success: true, message: 'Ticket raised successfully', data });
   } catch (error) {
     console.error('Error sending ticket:', error);
     res.status(500).json({ success: false, error: 'Failed to raise ticket' });
