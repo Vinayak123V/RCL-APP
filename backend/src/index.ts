@@ -2,7 +2,6 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { Server as SocketIO } from 'socket.io';
-import nodemailer from 'nodemailer';
 import dns from 'dns';
 import { initDb } from './db';
 
@@ -19,14 +18,8 @@ app.use(cors());
 app.use(express.json());
 app.use('/battery', batteryRouter);
 
-// Nodemailer setup for Gmail SMTP
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER || 'hosurv45@gmail.com',
-    pass: process.env.GMAIL_PASS || 'your_app_password_here' // User must provide this in Render env vars!
-  }
-});
+// Brevo API Key
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 // In-memory OTP store (email -> { otp, expiresAt })
 const otpStore = new Map<string, { otp: string; expiresAt: number }>();
@@ -69,12 +62,26 @@ app.post('/ticket', async (req, res) => {
       </div>
     `;
 
-    await transporter.sendMail({
-      from: `"ASTRA System" <${process.env.GMAIL_USER || 'hosurv45@gmail.com'}>`,
-      to: 'hosurv45@gmail.com',
-      subject: 'New Issue Ticket Raised from ASTRA App',
-      html: htmlContent,
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': BREVO_API_KEY,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { email: 'hosurv45@gmail.com', name: 'ASTRA System' },
+        to: [{ email: 'hosurv45@gmail.com' }],
+        subject: 'New Issue Ticket Raised from ASTRA App',
+        htmlContent: htmlContent
+      })
     });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Brevo API Error:', errText);
+      return res.status(500).json({ success: false, error: 'Failed to raise ticket' });
+    }
 
     res.json({ success: true, message: 'Ticket raised successfully' });
   } catch (error) {
@@ -133,16 +140,30 @@ app.post('/otp/send', async (req, res) => {
       </div>
     `;
 
-    await transporter.sendMail({
-      from: `"ASTRA System" <${process.env.GMAIL_USER || 'hosurv45@gmail.com'}>`,
-      to: email, // Now sending to the EXACT email the user requested!
-      subject: 'Your ASTRA Registration OTP',
-      html: htmlContent,
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': BREVO_API_KEY,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { email: 'hosurv45@gmail.com', name: 'ASTRA System' },
+        to: [{ email: email, name: name || 'User' }],
+        subject: 'Your ASTRA Registration OTP',
+        htmlContent: htmlContent
+      })
     });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Brevo API Error:', errText);
+      return res.status(500).json({ success: false, error: 'Failed to send OTP' });
+    }
 
     res.json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
-    console.error('Nodemailer OTP Error:', error);
+    console.error('Brevo OTP Error:', error);
     res.status(500).json({ success: false, error: 'Failed to send OTP' });
   }
 });
