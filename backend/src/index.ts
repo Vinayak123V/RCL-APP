@@ -66,7 +66,7 @@ app.post('/ticket', async (req, res) => {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'api-key': BREVO_API_KEY,
+        'api-key': BREVO_API_KEY || '',
         'content-type': 'application/json'
       },
       body: JSON.stringify({
@@ -144,7 +144,7 @@ app.post('/otp/send', async (req, res) => {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'api-key': BREVO_API_KEY,
+        'api-key': BREVO_API_KEY || '',
         'content-type': 'application/json'
       },
       body: JSON.stringify({
