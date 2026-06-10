@@ -19,8 +19,14 @@ app.use(cors());
 app.use(express.json());
 app.use('/battery', batteryRouter);
 
-import { Resend } from 'resend';
-const resend = new Resend('re_Lkjv46oj_57v1Dtv73rL6vCegMpb3ohio');
+// Nodemailer setup for Gmail SMTP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER || 'hosurv45@gmail.com',
+    pass: process.env.GMAIL_PASS || 'your_app_password_here' // User must provide this in Render env vars!
+  }
+});
 
 // In-memory OTP store (email -> { otp, expiresAt })
 const otpStore = new Map<string, { otp: string; expiresAt: number }>();
@@ -63,19 +69,14 @@ app.post('/ticket', async (req, res) => {
       </div>
     `;
 
-    const { data, error } = await resend.emails.send({
-      from: 'ASTRA System <onboarding@resend.dev>',
-      to: ['hosurv45@gmail.com'],
+    await transporter.sendMail({
+      from: `"ASTRA System" <${process.env.GMAIL_USER || 'hosurv45@gmail.com'}>`,
+      to: 'hosurv45@gmail.com',
       subject: 'New Issue Ticket Raised from ASTRA App',
       html: htmlContent,
     });
 
-    if (error) {
-      console.error('Resend API Error:', error);
-      return res.status(500).json({ success: false, error: 'Failed to raise ticket' });
-    }
-
-    res.json({ success: true, message: 'Ticket raised successfully', data });
+    res.json({ success: true, message: 'Ticket raised successfully' });
   } catch (error) {
     console.error('Error sending ticket:', error);
     res.status(500).json({ success: false, error: 'Failed to raise ticket' });
@@ -132,21 +133,16 @@ app.post('/otp/send', async (req, res) => {
       </div>
     `;
 
-    const { error } = await resend.emails.send({
-      from: 'ASTRA System <onboarding@resend.dev>',
-      to: [email],
+    await transporter.sendMail({
+      from: `"ASTRA System" <${process.env.GMAIL_USER || 'hosurv45@gmail.com'}>`,
+      to: email, // Now sending to the EXACT email the user requested!
       subject: 'Your ASTRA Registration OTP',
       html: htmlContent,
     });
 
-    if (error) {
-      console.error('Resend OTP Error:', error);
-      return res.status(500).json({ success: false, error: 'Failed to send OTP email' });
-    }
-
     res.json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
-    console.error('Error sending OTP:', error);
+    console.error('Nodemailer OTP Error:', error);
     res.status(500).json({ success: false, error: 'Failed to send OTP' });
   }
 });
