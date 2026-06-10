@@ -106,7 +106,7 @@ app.post('/otp/send', async (req, res) => {
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
           <tr>
             <td style="background-color: #0891b2; padding: 30px 40px; text-align: center;">
-              <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 600; letter-spacing: 1px;">ASTRA Intelligence</h1>
+              <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 600; letter-spacing: 1px;">ASTRA APP</h1>
             </td>
           </tr>
           <tr>
